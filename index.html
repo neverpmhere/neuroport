@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TSUKI Final Overlap + Sound (Faster, Gray Transparency)</title>
+  <style>
+    /* 1) Подключаем шрифт Heading */
+    @font-face {
+      font-family: "Heading";
+      src: url("./fonts/heading.woff") format("woff");
+    }
+
+    /* Сброс + базовые стили */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      overflow: hidden;
+      color: #FFF;
+      font-family: "Heading", sans-serif;
+    }
+
+    /* Кнопка "Start Animation" */
+    #startBtn {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 30px;
+      background: transparent;
+      color: #FFF;
+      border: 2px solid #FFF;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: 0.2s;
+      z-index: 9999;
+    }
+    #startBtn:hover {
+      border-color: yellow;
+    }
+
+    /* (2) Интро */
+    #intro {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: #000;
+      z-index: 9998;
+      display: none; 
+      transition: opacity 0.8s; /* более быстрое исчезновение */
+    }
+
+    /* Фоновая анимация #000 => rgba(128,128,128,0.7) за 2s */
+    #intro.ready {
+      animation: blackToGray 2s linear forwards; 
+    }
+    @keyframes blackToGray {
+      0%   { background-color: #000; }
+      100% { background-color: rgba(255,255,255,1); }
+    }
+
+    /* Когда интро destroyed => opacity:0 (0.8s) */
+    #intro.destroyed {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Текст, который печатается покадрово */
+    #introText {
+      position: absolute;
+      left: calc(10vw + 450px);
+      top: calc(70vh - 380px);
+      font-size: 3vw;
+      white-space: pre-line; 
+      text-shadow: 0 0 0 #fff;
+    }
+    /* Анимация blur/glow — пусть будет 1.2s */
+    #intro.ready #introText {
+      animation: textBlur 1.2s ease forwards;
+    }
+    @keyframes textBlur {
+      0% {
+        color: #fff;
+        text-shadow: 0 0 0 #fff;
+      }
+      100% {
+        color: #ccc;
+        text-shadow:
+          0 0 50px #fff,
+          0 0 12px #fff,
+          0 0 6px #fff;
+      }
+    }
+
+    /* Skip-кнопка (необязательно) */
+    #skipBtn {
+      position: absolute;
+      top: 90vh;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: pointer;
+      color: #fff;
+      opacity: 0.3;
+      transition: 0.2s;
+    }
+    #skipBtn:hover {
+      opacity: 0.7;
+    }
+
+    /* (3) Фоновая картинка (изначально скрыта) */
+    #bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: none;
+      z-index: 1;
+    }
+
+    /* (4) Финальная надпись (над bg) */
+    #finalText {
+      position: fixed;
+      left: calc(10vw + 450px);
+      top: calc(70vh - 380px);
+      font-size: 3vw;
+      text-shadow:
+        3px 6px #000,
+        0 -1px #000,
+        0 1px #000,
+        -1px 0 #000,
+        1px 0 #000,
+        -1px -1px #000,
+        1px 1px #000,
+        -1px 1px #000,
+        1px -1px #000;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.8s; /* аналогично, пусть быстро появляется */
+    }
+  </style>
+</head>
+<body>
+
+<!-- (A) Кнопка старта -->
+<button id="startBtn">Start Animation</button>
+
+<!-- (B) Интро -->
+<div id="intro">
+  <h1 id="introText"></h1>
+  <h6 id="skipBtn">skip</h6>
+</div>
+
+<!-- (C) Фон-картинка -->
+<img id="bg" src="background001.png" alt="final background">
+
+<!-- (D) Финальная надпись -->
+<h1 id="finalText">Unlink the world.<br>Unlock the rest.</h1>
+
+<!-- Подключаем howler (welcome.ogg) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+<script>
+  // Покадровый текст (каждые 100мс)
+  const sequence = [
+    "GAT_", "GATES\\", "GATES OP|", "GATES OPEN/", "GATES OPEN-", "GATES OPEN\\",
+    "GATES OPEN|", "GATES OPEN/", "GATES OPEN-", "GATES O\\", "GAT|", "/", "-", "\\",
+    "Unli|", "Unlink t/", "Unlink the wor-",
+    "Unlink the world.\nUn\\", "Unlink the world.\nUnlock th|",
+    "Unlink the world.\nUnlock the rest./", "Unlink the world.\nUnlock the rest."
+  ];
+  let idx = 0;
+  let interval = null;
+
+  // Звук
+  const sound = new Howl({
+    src: ['./sounds/welcome.ogg'],
+    volume: 0.7,
+    loop: false
+  });
+
+  const startBtn  = document.getElementById('startBtn');
+  const intro     = document.getElementById('intro');
+  const introText = document.getElementById('introText');
+  const skipBtn   = document.getElementById('skipBtn');
+  const bg        = document.getElementById('bg');
+  const finalText = document.getElementById('finalText');
+
+  // (1) Start
+  startBtn.addEventListener('click', () => {
+    startBtn.style.display = 'none';
+    intro.style.display = 'block'; // показываем интро
+    intro.classList.add('ready');  // фон #000->rgba(...,0.7) за 2s, текст blur 1.2s
+    sound.play();                  // welcome.ogg
+
+    // Печатаем символы (100мс)
+    idx = 0;
+    interval = setInterval(() => {
+      if (idx >= sequence.length) {
+        clearInterval(interval);
+        // Через 200мс убираем интро
+        setTimeout(() => endIntro(), 200);
+      } else {
+        introText.textContent = sequence[idx];
+        idx++;
+      }
+    }, 100);
+  });
+
+  // (2) Skip
+  skipBtn.addEventListener('click', () => {
+    clearInterval(interval);
+    endIntro();
+  });
+
+  // (3) Завершение
+  function endIntro() {
+    // Показываем фон и надпись
+    bg.style.display = 'block';
+    finalText.style.opacity = '1'; // за 0.8с (transition)
+
+    // Убираем интро (opacity=>0 за 0.8с)
+    intro.classList.add('destroyed');
+    setTimeout(() => {
+      intro.style.display = 'none';
+    }, 800);
+  }
+</script>
+</body>
+</html>
+
+
+
+
+

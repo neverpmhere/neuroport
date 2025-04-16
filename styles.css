@@ -1,0 +1,63 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+  }
+  
+  .intro {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    animation: fadeIn 10s linear forwards;
+  }
+  
+  .background-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: url('your-image.jpg'); /* подставь финальный яркий кадр */
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0) contrast(0.5) saturate(0);
+    animation: backgroundFadeIn 10s ease-in forwards;
+    z-index: 1;
+  }
+  
+  .overlay-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 2.5rem;
+    text-align: center;
+    z-index: 2;
+    text-shadow: 0 0 15px #fff, 0 0 30px #fff;
+    opacity: 0;
+    animation: textGlow 4s ease-in 2s forwards;
+  }
+  
+  /* Анимации */
+  @keyframes backgroundFadeIn {
+    0% {
+      filter: brightness(0) contrast(0.5) saturate(0);
+    }
+    100% {
+      filter: brightness(1.1) contrast(1.5) saturate(1.8);
+    }
+  }
+  
+  @keyframes textGlow {
+    0% {
+      opacity: 0;
+      text-shadow: 0 0 5px #fff;
+    }
+    100% {
+      opacity: 1;
+      text-shadow: 0 0 15px #fff, 0 0 30px #fff;
+    }
+  }
