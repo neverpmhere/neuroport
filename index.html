@@ -51,10 +51,10 @@
       background-color: #000;
       z-index: 9998;
       display: none; 
-      transition: opacity 0.8s; /* более быстрое исчезновение */
+      transition: opacity 0.8s; /* быстрое исчезновение */
     }
 
-    /* Фоновая анимация #000 => rgba(128,128,128,0.7) за 2s */
+    /* Фоновая анимация */
     #intro.ready {
       animation: blackToGray 2s linear forwards; 
     }
@@ -63,7 +63,7 @@
       100% { background-color: rgba(255,255,255,1); }
     }
 
-    /* Когда интро destroyed => opacity:0 (0.8s) */
+    /* Когда интро destroyed */
     #intro.destroyed {
       opacity: 0;
       pointer-events: none;
@@ -78,7 +78,7 @@
       white-space: pre-line; 
       text-shadow: 0 0 0 #fff;
     }
-    /* Анимация blur/glow — пусть будет 1.2s */
+    /* Анимация blur/glow */
     #intro.ready #introText {
       animation: textBlur 1.2s ease forwards;
     }
@@ -96,7 +96,7 @@
       }
     }
 
-    /* Skip-кнопка (необязательно) */
+    /* Skip-кнопка */
     #skipBtn {
       position: absolute;
       top: 90vh;
@@ -111,7 +111,7 @@
       opacity: 0.7;
     }
 
-    /* (3) Фоновая картинка (изначально скрыта) */
+    /* (3) Фоновая картинка */
     #bg {
       position: fixed;
       top: 0; left: 0;
@@ -139,7 +139,7 @@
         1px -1px #000;
       z-index: 2;
       opacity: 0;
-      transition: opacity 0.8s; /* аналогично, пусть быстро появляется */
+      transition: opacity 0.8s; /* появление */
     }
   </style>
 </head>
@@ -160,7 +160,7 @@
 <!-- (D) Финальная надпись -->
 <h1 id="finalText">Unlink the world.<br>Unlock the rest.</h1>
 
-<!-- Подключаем howler (welcome.ogg) -->
+<!-- welcome.ogg -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 <script>
   // Покадровый текст (каждые 100мс)
@@ -195,7 +195,7 @@
     intro.classList.add('ready');  // фон #000->rgba(...,0.7) за 2s, текст blur 1.2s
     sound.play();                  // welcome.ogg
 
-    // Печатаем символы (100мс)
+    // Анимация печатания
     idx = 0;
     interval = setInterval(() => {
       if (idx >= sequence.length) {
@@ -217,11 +217,11 @@
 
   // (3) Завершение
   function endIntro() {
-    // Показываем фон и надпись
+    // Фон и надпись
     bg.style.display = 'block';
     finalText.style.opacity = '1'; // за 0.8с (transition)
 
-    // Убираем интро (opacity=>0 за 0.8с)
+    // Remove intro
     intro.classList.add('destroyed');
     setTimeout(() => {
       intro.style.display = 'none';
